@@ -1,0 +1,10 @@
+# all files in the .cursor directory
+.cursor/*
+
+# all files in the .vscode directory
+.vscode/*
+
+# all files in the .ipynb_checkpoints directory
+.ipynb_checkpoints/*
+
+# all files in the .gitignore directory
