@@ -36,7 +36,7 @@ random.seed(42)
 # %% [markdown]
 ### 4. Setting up the hyperparameters
 BATCH_SIZE = 128
-EPOCHS = 10
+EPOCHS = 30
 LEARNING_RATE = 3e-4
 PATCH_SIZE = 4
 NUM_CLASSES = 10
@@ -53,7 +53,7 @@ DROP_RATE = 0.1
 transform = transforms.Compose([
     transforms.RandomCrop(32, padding=4),
     transforms.RandomHorizontalFlip(),
-    transforms.RandomRotation(degrees=10),
+    transforms.RandomRotation(degrees=30),
     transforms.ColorJitter(brightness=0.1, contrast=0.1, saturation=0.1, hue=0.1),
     transforms.ToTensor(),
     transforms.Normalize(mean=0.5, std=0.5)
@@ -223,6 +223,7 @@ def validate_model(model, test_loader, criterion, device):
 
 # %% [markdown]
 ### 18. Train the model
+best_loss = float('inf')
 train_accuracies = []
 test_accuracies = []
 train_losses = []
@@ -235,9 +236,17 @@ for epoch in tqdm(range(EPOCHS), desc="Training"):
     train_accuracies.append(train_accuracy)
     test_accuracies.append(test_accuracy)
     print(f"Epoch {epoch}/{EPOCHS} | Train Loss {train_loss:.4f} | Train Accuracy {train_accuracy:.4f}% | Test Loss {test_loss:.4f} | Test Accuracy {test_accuracy:.4f}%")
+    # save the checkpoint if the validation loss is the lowest
+    if test_loss < best_loss:
+        best_loss = test_loss
+        torch.save(model.state_dict(), "vision_transformer_best_model.pth")
 
 # %% [markdown]
-### 19. Plot the training and validation accuracy with loss in two subplots in vertical format
+### 19. Load the best model
+model.load_state_dict(torch.load("vision_transformer_best_model.pth"))
+
+# %% [markdown]
+### 20. Plot the training and validation accuracy with loss in two subplots in vertical format
 plt.figure(figsize=(5, 10))
 plt.subplot(2, 1, 1)
 plt.plot(train_accuracies, label="Train Accuracy")
@@ -252,7 +261,7 @@ plt.legend()
 plt.show()
 
 # %% [markdown]
-### 20. Predict and plot the grid of random images
+### 21. Predict and plot the grid of random images
 def predict_and_plot_grid(model, dataset, classes, num_images=9, max_rows=3, fontsize=8):
     model.eval()
     with torch.inference_mode():
@@ -270,9 +279,3 @@ def predict_and_plot_grid(model, dataset, classes, num_images=9, max_rows=3, fon
 predict_and_plot_grid(model, test_dataset, test_dataset.classes, num_images=9, fontsize=15)
 
 # %% [markdown]
-### 22. Save the model
-torch.save(model.state_dict(), "vision_transformer.pth")
-
-# %% [markdown]
-### 23. Load the model
-model.load_state_dict(torch.load("vision_transformer.pth"))
